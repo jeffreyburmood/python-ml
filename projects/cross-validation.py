@@ -34,3 +34,17 @@ for i, (train_index, test_index) in enumerate(kf.split(X)):
     print(f"Fold {i}:")
     print(f"  Train: index={train_index}")
     print(f"  Test:  index={test_index}")
+
+# Cross validation example: parameter tuning
+# Goal: Select the best tuning parameters (hyperparameters) for KNN on the iris dataset
+
+from sklearn.model_selection import cross_val_score
+
+knn = KNeighborsClassifier(n_neighbors=5)
+# 10-fold cross validation
+scores = cross_val_score(knn, X, y, cv=10, scoring="accuracy")
+
+print("Scores results: \n")
+print(scores)
+print("Scores Mean: \n")
+print(scores.mean())
