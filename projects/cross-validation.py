@@ -46,5 +46,69 @@ scores = cross_val_score(knn, X, y, cv=10, scoring="accuracy")
 
 print("Scores results: \n")
 print(scores)
+# use average accuracy as an eestimate of out-of-sample accuracy
 print("Scores Mean: \n")
 print(scores.mean())
+
+# find an optimal value for K for KNN
+k_range = range(1, 31)
+k_scores = []
+for k in k_range:
+    knn = KNeighborsClassifier(n_neighbors=k)
+    scores = cross_val_score(knn, X, y, cv=10, scoring="accuracy")
+    k_scores.append(scores.mean())
+
+print(k_scores)
+
+import matplotlib.pyplot as plt
+
+# plot the value of K for KNN (x-axis) versus the cross-validated accuracy (y-axis)
+plt.plot(k_range, k_scores)
+plt.xlabel("Value of K for KNN")
+plt.ylabel("Cross-validated Accuracy")
+# plt.show()
+
+# Generally, best to select the simplist model, for KNN, higher K produces simpler model so K=20 is best
+
+
+# Cross validation example: model selection
+# Compare KNN vs Logistic Regression for Iris
+
+knn = KNeighborsClassifier(n_neighbors=20)
+print(cross_val_score(knn, X, y, cv=10, scoring="accuracy").mean())
+
+from sklearn.linear_model import LogisticRegression
+
+logreg = LogisticRegression()
+print(cross_val_score(logreg, X, y, cv=10, scoring="accuracy").mean())
+
+# Cross-validation example: feature selection
+# Goal: should Newpapers feature be included in the advertising dataset
+
+import pandas as pd
+import numpy as np
+from sklearn.linear_model import LinearRegression
+
+data = pd.read_csv(
+    "/Users/jeffrey/SynologyDrive/projects/Python-Programming/Training/python-ml/data/Advertising.csv",
+    index_col=0,
+)
+
+feature_cols = ["TV", "Radio", "Newspaper"]
+X = data[feature_cols]
+y = data.Sales
+
+lm = LinearRegression()
+scores = cross_val_score(lm, X, y, cv=10, scoring="neg_mean_squared_error")
+print(scores)
+# print(metrics.get_scorer_names())
+
+mse_scores = -scores
+rmse_scores = np.sqrt(mse_scores)
+print(rmse_scores.mean())
+
+feature_cols = ["TV", "Radio"]
+X = data[feature_cols]
+print(
+    np.sqrt(-cross_val_score(lm, X, y, cv=10, scoring="neg_mean_squared_error")).mean()
+)
