@@ -112,3 +112,40 @@ X = data[feature_cols]
 print(
     np.sqrt(-cross_val_score(lm, X, y, cv=10, scoring="neg_mean_squared_error")).mean()
 )
+
+# searching for optimal tuning parameters
+# goal: more efficient parameter tuning using GridSearchCV
+
+from sklearn.model_selection import GridSearchCV
+
+X = iris.data
+y = iris.target
+
+k_range = range(1, 31)
+# create a parameter grid: map the parameter names to the values that should be searched
+param_grid = dict(n_neighbors=k_range)
+
+grid = GridSearchCV(knn, param_grid, cv=10, scoring="accuracy", n_jobs=-1)
+
+# fit the grid with data
+grid.fit(X, y)
+
+# print(f"Grid CV results:\n {grid.cv_results_}")
+
+# examine the first tuple
+print(grid.cv_results_["params"][0])
+print(grid.cv_results_["split0_test_score"])
+print(grid.cv_results_["mean_test_score"][0])
+
+grid_mean_scores = [result for result in grid.cv_results_["mean_test_score"]]
+
+plt.plot(k_range, grid_mean_scores)
+plt.xlabel("Value of K for KNN")
+plt.ylabel("Cross Validated Accuracy")
+# plt.show()
+
+# examine the best model
+print("Best Values")
+print(f"Best Score {grid.best_score_}")
+print(f"Best Params {grid.best_params_}")
+print(f"Best Estimator {grid.best_estimator_}")
