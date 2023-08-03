@@ -178,3 +178,18 @@ print(f"Prediction is: {knn.predict([[3,5,4,2]])}")
 
 # shortcut, GridSearchCV automatically refits the best model/parameters using all of the data
 print(f"Shortcut predictions: {grid.predict([[3,5,4,2]])}")
+
+# reducing computational expense using RandomSearchCV
+# searches a subset of the parameters
+from sklearn.model_selection import RandomizedSearchCV
+
+rand = RandomizedSearchCV(
+    knn, param_grid, cv=10, scoring="accuracy", n_iter=10, random_state=5
+)
+rand.fit(X, y)
+
+# examine the best model
+print("Best Values")
+print(f"Best Score {grid.best_score_}")
+print(f"Best Params {grid.best_params_}")
+print(f"Best Estimator {grid.best_estimator_}")
