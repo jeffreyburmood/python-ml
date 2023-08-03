@@ -149,3 +149,32 @@ print("Best Values")
 print(f"Best Score {grid.best_score_}")
 print(f"Best Params {grid.best_params_}")
 print(f"Best Estimator {grid.best_estimator_}")
+
+# searching multiple model parameters simulataneously
+weight_options = ["uniform", "distance"]
+
+param_grid = dict(n_neighbors=k_range, weights=weight_options)
+
+grid = GridSearchCV(knn, param_grid, cv=10, scoring="accuracy", n_jobs=-1)
+
+# fit the grid with data
+grid.fit(X, y)
+
+# print(f"Grid CV results:\n {grid.cv_results_}")
+
+# examine the best model
+print("Best Values")
+print(f"Best Score {grid.best_score_}")
+print(f"Best Params {grid.best_params_}")
+print(f"Best Estimator {grid.best_estimator_}")
+
+# using the best model parameters
+# train your model using all data and the best known parameters
+knn = KNeighborsClassifier(n_neighbors=13, weights="uniform")
+knn.fit(X, y)
+
+# make a prediction on out-of-sample data
+print(f"Prediction is: {knn.predict([[3,5,4,2]])}")
+
+# shortcut, GridSearchCV automatically refits the best model/parameters using all of the data
+print(f"Shortcut predictions: {grid.predict([[3,5,4,2]])}")
