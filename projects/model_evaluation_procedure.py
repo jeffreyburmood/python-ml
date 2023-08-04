@@ -10,6 +10,10 @@
         - Train the model on the training set
         - Test the model on the testing set, and evaluate the results
     
+    Model Evaluation Metrics Used:
+        - Regression Problems: Mean Absolure Error, Mean Squared Error, Root Mean Squared Error
+        - Classfification problems: Classification accuracy
+        
     """
 
 # Procedure 1
