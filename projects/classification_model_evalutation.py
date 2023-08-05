@@ -25,3 +25,48 @@ col_names = [
 pima = pd.read_csv(url)
 
 print(pima.head())
+
+# select the features to use and create X and y
+feature_cols = ["Pregnancies", "Insulin", "BMI", "Age"]
+X = pima[feature_cols]
+y = pima.Outcome
+
+# build the training and testing sets
+from sklearn.model_selection import train_test_split
+
+X_train, X_test, y_train, y_test = train_test_split(X, y, random_state=0)
+
+# train a logistic regression model
+from sklearn.linear_model import LogisticRegression
+
+logreg = LogisticRegression()
+logreg.fit(X_train, y_train)
+
+# make the class predictions for the testing set
+y_pred_class = logreg.predict(X_test)
+
+# calculate the accuracy
+from sklearn import metrics
+
+print(f"Model Accuracy: {metrics.accuracy_score(y_test, y_pred_class)}")
+
+# null accuracy - predicting the most frequent class (in this case zero)
+# examing the class distribution of the testing set
+print(y_test.value_counts())
+
+# calculate the percentage of ones
+print(y_test.mean())
+
+# calculate the percentage of zeros
+print(1 - y_test.mean())
+
+# calcluate null accuracy for binary classification problems coded as 0/1
+print(max(y_test.mean(), 1 - y_test.mean()))
+
+# calculate null accuracy for multi-class classification problems
+print(y_test.value_counts().head(1) / len(y_test))
+
+# comparing true and predicted response values
+# conclusion - classification accuracy does not take into account the underlying distribution of response values
+print(f"True: {y_test.values[0:25]}")
+print(f"Pred: {y_pred_class[0:25]}")
