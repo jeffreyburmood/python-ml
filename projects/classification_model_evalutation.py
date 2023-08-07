@@ -123,3 +123,15 @@ print(f"classification precision from confusion matrix: {TP / float(TP + FP)}")
 print(
     f"Classification precision calculated:             {metrics.precision_score(y_test, y_pred_class)}"
 )
+
+# analyzing classifier performance
+# Area Under the Curve (AUC) is usefule as a single number summary of classifier performance
+# If you randomly chose one positive and one negative observation, AUC represents the likelihood
+# that your classifier will assign a higher predicted probability to the positive observation.
+
+# calculate a cross-validated AUC
+from sklearn.model_selection import cross_val_score
+
+print(
+    f'Cross validation for AUC: {cross_val_score(logreg, X, y, cv=10, scoring="roc_auc").mean()}'
+)
