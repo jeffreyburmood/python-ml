@@ -125,7 +125,3 @@ print(f"classification precision from confusion matrix: {TP / float(TP + FP)}")
 print(
     f"Classification precision calculated:             {metrics.precision_score(y_test, y_pred_class)}"
 )
-
-#
-# Adjusting the classification threshold
-#
