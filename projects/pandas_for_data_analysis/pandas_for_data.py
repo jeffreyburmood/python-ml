@@ -11,3 +11,18 @@ users = pd.read_table("http://bit.ly/movieusers", sep="|", header=None, names=us
 print(users.head())
 
 # how to select a Series from a Dataframe
+ufo = pd.read_csv("http://bit.ly/uforeports")
+print(type(ufo))
+print(ufo.head())
+
+city_bracket = ufo["City"]
+print(type(city_bracket))
+print(city_bracket.head())
+
+city_dot = ufo.City
+print(type(city_dot))
+print(city_dot.head())
+
+# create a new series in a dataframe
+ufo["Location"] = ufo.City + ", " + ufo.State
+print(ufo.head())
