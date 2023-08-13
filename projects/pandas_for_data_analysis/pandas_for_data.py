@@ -26,3 +26,25 @@ print(city_dot.head())
 # create a new series in a dataframe
 ufo["Location"] = ufo.City + ", " + ufo.State
 print(ufo.head())
+
+# how to rename columns in a dataframe
+print(ufo.columns)
+
+ufo.rename(
+    columns={"Colors Reported": "Colors_Reported", "Shape Reported": "Shape_Reported"},
+    inplace=True,
+)
+print(ufo.columns)
+
+ufo_cols = ["city", "colors_reported", "shape_reported", "state", "time", "location"]
+ufo.columns = ufo_cols
+print(ufo.columns)
+
+# rename during data import
+ufo_cols = ["city", "colors reported", "shape reported", "state", "time"]
+ufo = pd.read_csv("http://bit.ly/uforeports", names=ufo_cols, header=0)
+print(ufo.columns)
+
+# rename in place by modifying the column name strings
+ufo.columns = ufo.columns.str.replace(" ", "_")
+print(ufo.columns)
