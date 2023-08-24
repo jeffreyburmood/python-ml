@@ -40,11 +40,24 @@ ufo_cols = ["city", "colors_reported", "shape_reported", "state", "time", "locat
 ufo.columns = ufo_cols
 print(ufo.columns)
 
-# rename during data import
+# rename columns during data import
 ufo_cols = ["city", "colors reported", "shape reported", "state", "time"]
 ufo = pd.read_csv("http://bit.ly/uforeports", names=ufo_cols, header=0)
 print(ufo.columns)
 
-# rename in place by modifying the column name strings
+# rename columns in place by modifying the column name strings
 ufo.columns = ufo.columns.str.replace(" ", "_")
 print(ufo.columns)
+
+# how to remove column from a dataframe
+ufo.drop("colors_reported", axis=1, inplace=True)  # axis 0 is row, axis 1 is column
+print(ufo.columns)
+
+# remove multiple columns at a time
+ufo.drop(["city", "state"], axis=1, inplace=True)
+print(ufo.head())
+
+# remove multiple rows at a time
+# remove any rows dating back to before 1931
+ufo.drop([0, 1], axis=0, inplace=True)
+print(ufo.head())
