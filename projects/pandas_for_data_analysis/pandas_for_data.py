@@ -82,5 +82,4 @@ print(movies.sort_values(["content_rating", "duration"]).tail())
 # list only the rows where duration >= 200
 print(movies[movies.duration >= 200].head())
 # just interested in the genre
-
 print(movies.loc[movies.duration >= 200, "genre"].head())
