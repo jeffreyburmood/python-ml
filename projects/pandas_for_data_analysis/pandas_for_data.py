@@ -77,3 +77,10 @@ print(movies.sort_values("title").tail())
 # sorting multiple columns
 print(movies.sort_values(["content_rating", "duration"]).head())
 print(movies.sort_values(["content_rating", "duration"]).tail())
+
+# filtering rows in a dataframe by column value
+# list only the rows where duration >= 200
+print(movies[movies.duration >= 200].head())
+# just interested in the genre
+
+print(movies.loc[movies.duration >= 200, "genre"].head())
