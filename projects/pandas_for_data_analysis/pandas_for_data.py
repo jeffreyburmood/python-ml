@@ -61,3 +61,19 @@ print(ufo.head())
 # remove any rows dating back to before 1931
 ufo.drop([0, 1], axis=0, inplace=True)
 print(ufo.head())
+
+# sorting a dataframe or series
+movies = pd.read_csv("http://bit.ly/imdbratings")
+print(movies.head())
+
+# sorting a series (not inplace so does not affect underlying order)
+print(movies.title.sort_values().head())
+print(movies.title.sort_values().tail())
+
+# sorting the dataframe
+print(movies.sort_values("title").head())
+print(movies.sort_values("title").tail())
+
+# sorting multiple columns
+print(movies.sort_values(["content_rating", "duration"]).head())
+print(movies.sort_values(["content_rating", "duration"]).tail())
