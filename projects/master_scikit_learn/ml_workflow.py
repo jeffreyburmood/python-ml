@@ -2,7 +2,7 @@
 
 import pandas as pd
 from sklearn.linear_model import LogisticRegression
-from sklearn.model_selection import cross_val_score
+from sklearn.model_selection import cross_val_score, StratifiedKFold
 
 # Loading and exploring data
 df = pd.read_csv('../../data/titanic_train.csv', nrows=10)
@@ -21,6 +21,9 @@ y = df['Survived']  # target as a series
 
 # Building and evaluating a model
 logreg = LogisticRegression(solver='liblinear', random_state=1)
+
+# print the model parameters
+print(logreg.get_params())
 
 print(cross_val_score(logreg, X, y, cv=3, scoring='accuracy').mean())
 
