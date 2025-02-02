@@ -1,7 +1,5 @@
 """ This file represents Chapter 3: Encoding categorical features """
 import pandas as pd
-from sklearn.linear_model import LogisticRegression
-from sklearn.model_selection import cross_val_score, StratifiedKFold
 from sklearn.preprocessing import OneHotEncoder
 
 # Loading and exploring data
