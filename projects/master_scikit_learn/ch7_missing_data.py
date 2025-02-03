@@ -62,3 +62,9 @@ print(pipe.named_steps['columntransformer'].named_transformers_['simpleimputer']
 
 X_new = df_new[cols]
 print(pipe.predict(X_new))
+
+# using "missingness" as a feature (useful when missing data is not random)
+# adds column indicating rows with missing values
+imp_indicator = SimpleImputer(add_indicator=True)
+print(imp_indicator.fit_transform(X[['Age']]))
+
