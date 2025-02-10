@@ -1,6 +1,28 @@
 """ This file contains code for improving workflow with ColumnTransformer and Pipeline
     ColumnTransformer - apply different preprocessing steps to different columns
-    Pipeline - apply the same workflow to training data and new data """
+    Pipeline - apply the same workflow to training data and new data
+
+    Rules for Pipeline Steps:
+    - All steps other than the final step must be a transformer
+    - Final step can be a model or a transformer
+
+    Pipeline ends in a model:
+    - fit
+        All steps before the final step run fit_transform
+        Final step run fit
+    - predict
+        All steps before the final step run transform
+        Final step run predict
+
+    Pipeline ends in a transformer:
+    - fit_transform
+        All steps run fit_transform
+    - transform
+        All steps run transform
+    - fit
+        All steps before the final step run fit_transform
+        Final step run fits
+        """
 import pandas as pd
 from sklearn.linear_model import LogisticRegression
 from sklearn.preprocessing import OneHotEncoder
