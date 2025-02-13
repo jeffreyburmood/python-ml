@@ -19,6 +19,7 @@ cols = ['Parch', 'Fare', 'Embarked', 'Sex', 'Name', 'Age']
 
 X = df[cols]
 y = df['Survived']
+X_new = df_new[cols]
 
 ohe = OneHotEncoder()
 vect = CountVectorizer()
@@ -73,3 +74,29 @@ print(results.sort_values('rank_test_score'))
 
 print(grid.best_score_)
 print(grid.best_params_)
+print(grid.best_estimator_)
+
+print(grid.predict(X_new))
+
+# saving the pipeline for future use
+#import joblib
+#joblib.dump(grid.best_estimator_, 'pipe.joblib')
+
+#pipe_from_joblib = joblib.load('pipe.joblib')
+
+# Using RandomizedSearchCV (does same thing as GridSearchCV but with random parameters selected to run faster
+# - similar results in far less time
+# - easier to control the computational budget
+# - freedom to tune many more parameters
+#   n_iter: Specify the number randomly-chosen parameter combinations to cross-validate
+#   random_state: set to any integer for reproducibility
+
+more_params = params.copy()
+more_params['logisticregression__C'] = [0.01, 0.1, 1, 10, 100, 1000]
+
+from sklearn.model_selection import RandomizedSearchCV
+rand = RandomizedSearchCV(pipe, more_params, cv=5, scoring='accuracy', n_iter=10, random_state=1, n_jobs=-1)
+rand.fit(X, y)
+
+print(rand.best_score_)
+print(rand.best_params_)
