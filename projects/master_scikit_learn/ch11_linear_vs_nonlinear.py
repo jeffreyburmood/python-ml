@@ -1,10 +1,9 @@
 """ This file contains code to explore linear versus non-linear models in the workflow """
 import pandas as pd
-from joblib.testing import param
 from sklearn.compose import make_column_transformer
+from sklearn.ensemble import RandomForestClassifier
 from sklearn.feature_extraction.text import CountVectorizer
 from sklearn.impute import SimpleImputer
-from sklearn.ensemble import RandomForestClassifier
 from sklearn.linear_model import LogisticRegression
 from sklearn.model_selection import cross_val_score, GridSearchCV, RandomizedSearchCV
 from sklearn.pipeline import make_pipeline, Pipeline
