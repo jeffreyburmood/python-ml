@@ -1,4 +1,16 @@
-""" This file represents Chapter 3: Encoding categorical features """
+""" This file represents Chapter 3: Encoding categorical features
+
+    There are two types of categorical features:
+
+    A nominal feature has categories that are unordered, such as Embarked and Sex.
+    An ordinal feature has categories with an inherent logical ordering, such as Pclass.
+    So far, here's the advice for encoding nominal and ordinal features:
+
+    For a nominal feature, you should use OneHotEncoder, and it will output one column for each category.
+    For an ordinal feature that is already encoded numerically, you should leave it as-is.
+    And for an ordinal feature that is encoded as strings, you should use OrdinalEncoder, and it will output a
+        single column using the category ordering that you define."""
+
 import pandas as pd
 from sklearn.preprocessing import OneHotEncoder
 
