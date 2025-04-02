@@ -58,3 +58,20 @@ def chatbot(chat_id: int):
         else:
             chatbot_output = app.invoke({'messages': user_input}, config)
             print('AI:', chatbot_output['messages'][-1].content, end='\n\n')
+
+# now build the chatbot function - streaming version
+def chatbot_streaming(chat_id: int):
+    config = {'configurable': {'thread_id': chat_id}}
+
+    while True:
+        user_input = input('User:')
+
+        if user_input in ['exit', 'quit']:
+            print('AI: See you later!')
+            break
+
+        else:
+            print('AI: ', end='')
+            for chunk, metadata in app.stream({'messages': user_input}, config, stream_mode='messages'):
+                print(chunk.content, end='', flush=True)
+            print('\n')
