@@ -64,5 +64,29 @@ def chatbot(chat_id: int):
 
 # print(prompt.invoke(state))
 
-print(model.invoke(prompt.invoke(state)))
+# print(model.invoke(prompt.invoke(state)))
 
+# change steps together just like scikit pipelines
+# chain = prompt | model
+# print(chain.invoke(state))
+
+# rework the call_model() function to use the chain
+def call_model_chain(state: MessagesState):
+    model_chain = prompt | model
+    updated_messages = model_chain.invoke(state)
+    return {'messages': updated_messages}
+
+# set up mode memory
+workflow = StateGraph(MessagesState)
+
+# update the workflow
+workflow.add_node('model_node', call_model_chain)
+workflow.add_edge(START, 'model_node')
+
+# specify a memory checkpointer (this example is in-memory but can use a DB)
+memory = MemorySaver()
+
+# now build an invokable model
+app = workflow.compile(memory)
+
+chatbot(2)
