@@ -1,4 +1,4 @@
-""" this is the file that contains the code for the OPENAI-based chatbot """
+""" this is the file that contains the code for the OPENAI-based agent """
 from dotenv import load_dotenv
 from langchain_openai import ChatOpenAI
 from langgraph.graph import StateGraph, MessagesState, START
@@ -12,28 +12,14 @@ load_dotenv()
 # choose the model to use
 model = ChatOpenAI(model='gpt-4o-mini')
 
-# print(model.invoke("What is the capital of New Mexico, USA?"))
-
-# set up mode memory
-workflow = StateGraph(MessagesState)
-
-def call_model(state: MessagesState):
-    updated_messages = model.invoke(state['messages'])
-    return {'messages': updated_messages}
-
-workflow.add_node('model_node', call_model)
-workflow.add_edge(START, 'model_node')
-
-# specify a memory checkpointer (this example is in-memory but can use a DB)
-memory = MemorySaver()
-
-# now build an invokable model
-app = workflow.compile(memory)
+class CustomState(MessagesState):
+    language: str
 
 # build a prompt template using langchain System messagess
+
 prompt = ChatPromptTemplate(
     [
-        ("system", "Limit all of your responses to two sentences."),
+        ("system", "Translate the input from English to {language}."),
         ("placeholder", "{messages}")
     ]
 )
@@ -42,9 +28,9 @@ prompt = ChatPromptTemplate(
 state = {"messages": ["What is the history of the United States?"]}
 
 
-# now build the chatbot function - streaming version
-def chatbot(chat_id: int):
-    config = {'configurable': {'thread_id': chat_id}}
+# now build the translatebot function - streaming version
+def translatebot(language: str):
+    config = {'configurable': {'thread_id': 999}}  # no conversation so use just static thread id
 
     while True:
         user_input = input('User:')
@@ -55,7 +41,7 @@ def chatbot(chat_id: int):
 
         else:
             print('AI: ', end='')
-            for chunk, metadata in app.stream({'messages': user_input}, config, stream_mode='messages'):
+            for chunk, metadata in app.stream({'messages': user_input, "language": language}, config, stream_mode='messages'):
                 print(chunk.content, end='', flush=True)
             print('\n')
 
@@ -71,13 +57,13 @@ def chatbot(chat_id: int):
 # print(chain.invoke(state))
 
 # rework the call_model() function to use the chain
-def call_model_chain(state: MessagesState):
+def call_model_chain(state: CustomState):
     model_chain = prompt | model
     updated_messages = model_chain.invoke(state)
     return {'messages': updated_messages}
 
 # set up mode memory
-workflow = StateGraph(MessagesState)
+workflow = StateGraph(CustomState)
 
 # update the workflow
 workflow.add_node('model_node', call_model_chain)
@@ -89,4 +75,4 @@ memory = MemorySaver()
 # now build an invokable model
 app = workflow.compile(memory)
 
-chatbot(2)
+translatebot("French")
