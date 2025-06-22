@@ -1,22 +1,41 @@
 """ this is the file that contains the code for the OPENAI-based chatbot """
+from dotenv import load_dotenv
 import json
 
-from dotenv import load_dotenv
-from langchain_community.tools.tavily_search import TavilySearchResults
-from langchain_core.messages import AIMessage, ToolMessage
-from langchain_openai import ChatOpenAI
-from langgraph.checkpoint.memory import MemorySaver
+from langchain_core.tools import create_retriever_tool
+from langchain_openai import ChatOpenAI, OpenAIEmbeddings
 from langgraph.graph import StateGraph, MessagesState, START
+from langgraph.checkpoint.memory import MemorySaver
+from langchain_community.tools.tavily_search import TavilySearchResults
+from langchain_community.document_loaders import WebBaseLoader
 from langgraph.prebuilt import ToolNode, tools_condition
+from langchain_core.messages import AIMessage, ToolMessage
+from langchain_core.vectorstores import InMemoryVectorStore
+from langchain_text_splitters import RecursiveCharacterTextSplitter
 
 # load the environment variable with the API key
 load_dotenv()
 
+# set up document loader for RAG
+loader = WebBaseLoader("https://docs.python.org/3/whatsnew/3.13.html")
+docs = loader.load()
+# build the text chunks from the document
+text_splitter = RecursiveCharacterTextSplitter(chunk_size=1000, chunk_overlap=200)
+chunks = text_splitter.split_documents(docs)
+# add the embedding model and the vector store
+embedding = OpenAIEmbeddings(model="text-embedding-3-large")
+vector_store = InMemoryVectorStore.from_documents(chunks, embedding)
+# now add the vector store retriever and associated retriever tool
+retriever = vector_store.as_retriever()
+python_tool = create_retriever_tool(retriever, "python_3_13_update_retriever",
+            "A retriever that returns relavant documents from the What's New page of the Python 3.13 documentation" 
+                        "Useful when you need to answer questions about the features, enhancements, removals, deprecations and other changes introduced in this version of python"
+        )
 # set up external search tool
 search = TavilySearchResults(max_results=5)
 
 # create the list of model tools
-tools_list = [search]
+tools_list = [python_tool, search]
 
 # choose the model to use
 model = ChatOpenAI(model='gpt-4o-mini').bind_tools(tools_list)
@@ -61,9 +80,12 @@ def chatbot(chat_id: int):
                 if isinstance(chunk, AIMessage):
                     print(chunk.content, end="", flush=True)
                 if isinstance(chunk, ToolMessage):
-                    result_list = json.loads(chunk.content)
-                    urls = [result["url"] for result in result_list]
-                    print(urls, end="\n\n")
+                    if chunk.name == "tavily_search_results_json":
+                        result_list = json.loads(chunk.content)
+                        urls = [result["url"] for result in result_list]
+                        print(urls, end="\n\n")
+                    if chunk.name == "python_3_13_update_retriever":
+                        print("Checking Python 3.13 documentation...", end="\n\n")
             print("\n")
 
 def examine_chatbot(chat_id: int):
@@ -81,4 +103,4 @@ def examine_chatbot(chat_id: int):
                 state["messages"][-1].pretty_print()
             print("\n")
 
-examine_chatbot(6)
+chatbot(7)
