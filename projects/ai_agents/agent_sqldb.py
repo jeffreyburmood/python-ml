@@ -2,48 +2,58 @@
 import json
 
 from dotenv import load_dotenv
-from langchain_community.document_loaders import WebBaseLoader
-from langchain_community.tools.tavily_search import TavilySearchResults
-from langchain_core.messages import AIMessage, ToolMessage
-from langchain_core.tools import create_retriever_tool
-from langchain_core.vectorstores import InMemoryVectorStore
-from langchain_openai import ChatOpenAI, OpenAIEmbeddings
-from langchain_text_splitters import RecursiveCharacterTextSplitter
+from langchain_core.messages import AIMessage
+from langchain_openai import ChatOpenAI
 from langgraph.checkpoint.memory import MemorySaver
 from langgraph.graph import StateGraph, MessagesState, START
 from langgraph.prebuilt import ToolNode, tools_condition
+from langchain_community.agent_toolkits import SQLDatabaseToolkit
+from langchain_community.utilities import SQLDatabase
+from langchain_core.prompts import ChatPromptTemplate
 
 # load the environment variable with the API key
 load_dotenv()
 
-# set up document loader for RAG
-loader = WebBaseLoader("https://docs.python.org/3/whatsnew/3.13.html")
-docs = loader.load()
-# build the text chunks from the document
-text_splitter = RecursiveCharacterTextSplitter(chunk_size=1000, chunk_overlap=200)
-chunks = text_splitter.split_documents(docs)
-# add the embedding model and the vector store
-embedding = OpenAIEmbeddings(model="text-embedding-3-large")
-vector_store = InMemoryVectorStore.from_documents(chunks, embedding)
-# now add the vector store retriever and associated retriever tool
-retriever = vector_store.as_retriever()
-python_tool = create_retriever_tool(retriever, "python_3_13_update_retriever",
-            "A retriever that returns relavant documents from the What's New page of the Python 3.13 documentation" 
-                        "Useful when you need to answer questions about the features, enhancements, removals, deprecations and other changes introduced in this version of python"
-        )
-# set up external search tool
-search = TavilySearchResults(max_results=5)
-
-# create the list of model tools
-tools_list = [python_tool, search]
+# this allows connection to the database to be used for LLM queries
+database_file_path = '../../data/Chinook.sqlite'
+db = SQLDatabase.from_uri(f"sqlite:///{database_file_path}")
+# get the tool list from the toolkit
+sql_model = ChatOpenAI(model="gpt-4o-mini")
+toolkit = SQLDatabaseToolkit(db=db, llm=sql_model)
+tools_list = toolkit.get_tools()
 
 # choose the model to use
 model = ChatOpenAI(model='gpt-4o-mini').bind_tools(tools_list)
 
 # print(model.invoke("What is the capital of New Mexico, USA?"))
+system_message = """
+You are an agent designed to interact with a SQL database.
+Given an input question, create a syntactically correct SQLite query to
+run to help find the answer. Unless the user specifies in his question a
+specific number of examples they wish to obtain, always limit your query to
+at most 5 results. You can order the results by a relevant column to
+return the most interesting examples in the database.
+Never query for all the columns from a specific table, only ask for a the
+few relevant columns given the question.
+Pay attention to use only the column names that you can see in the schema
+description. Be careful to not query for columns that do not exist. Also,
+pay attention to which column is in which table.
+You have access to tools for interacting with the database.
+You must double check your query before executing it. If you encounter and error while executing a query, rewrite the 
+query and try again.
+Do not make any DML statement (INSERT, UPDATE, DELETE, DROP, etc) to the database.
+To start you should always looks at the tables in the database to see what you can query.
+Then you should query the schema of the most relevant tables.
+"""
+
+prompt = ChatPromptTemplate(
+    [("system", system_message),
+     ("placeholder", "{messages}")]
+)
 
 def call_model(state: MessagesState):
-    updated_messages = model.invoke(state['messages'])
+    chain = prompt | model
+    updated_messages = chain.invoke(state)
     return {'messages': updated_messages}
 
 call_tool = ToolNode(tools_list)
@@ -79,13 +89,6 @@ def chatbot(chat_id: int):
             for chunk, metadata in app.stream({'messages': user_input}, config, stream_mode='messages'):
                 if isinstance(chunk, AIMessage):
                     print(chunk.content, end="", flush=True)
-                if isinstance(chunk, ToolMessage):
-                    if chunk.name == "tavily_search_results_json":
-                        result_list = json.loads(chunk.content)
-                        urls = [result["url"] for result in result_list]
-                        print(urls, end="\n\n")
-                    if chunk.name == "python_3_13_update_retriever":
-                        print("Checking Python 3.13 documentation...", end="\n\n")
             print("\n")
 
 def examine_chatbot(chat_id: int):
@@ -103,4 +106,9 @@ def examine_chatbot(chat_id: int):
                 state["messages"][-1].pretty_print()
             print("\n")
 
-chatbot(7)
+#examine_chatbot(12)
+
+chatbot(13)
+
+# print(db.get_usable_table_names())
+# print(db.run("SELECT * FROM Artist LIMIT 10;"))
